@@ -1,0 +1,96 @@
+ public function add_vendor()
+    {
+        
+       
+        
+        
+        $data['pageTitle'] = 'Add Vendors';
+        $data['pageName'] = 'add vendor';
+        // $data['product'] = $this->Crud_model->get_all_data('product_name,product_id', 'products', 'product_name ASC');
+        if($_SERVER['REQUEST_METHOD'] == 'POST')
+        {
+            
+
+                       
+             $config = [
+                                'upload_path'   => 'assets/img/vendor/',
+                                'allowed_types' => 'jpg|jpeg|png',
+                                'max_size'      =>  2000
+                       ];
+           
+                                 
+            $this->load->library('upload', $config);
+             $this->upload->initialize($config);
+            
+            $this->form_validation->set_rules('fname','First Name','trim|required');
+            $this->form_validation->set_rules('lname','Last Name','trim|required');
+            $this->form_validation->set_rules('email','Email Id','trim|required|valid_email|is_unique[users.email]');
+            $this->form_validation->set_rules('phone','Mobile no','trim|required|is_unique[users.mobile]');
+            $this->form_validation->set_rules('dob','Date of birth','trim|required');
+            $this->form_validation->set_rules('gender','Gender','required');
+            // $this->form_validation->set_rules('pancard','Pan Card','trim|required');
+            // $this->form_validation->set_rules('gst','GST','trim|required');
+            $this->form_validation->set_rules('feeType','Platform Fee Type','required');
+            $this->form_validation->set_rules('pfee','Platform Fee','required');
+            $this->form_validation->set_rules('status','Status','required');
+            
+            
+            if($this->form_validation->run() && $this->upload->do_upload('image')) 
+            {
+                
+                    $image    = $this->upload->data();
+                    $img      = $image['file_name'];
+                    
+                 
+                   
+                     $arr =array();
+                   $pass = $this->random_password();
+                   $distributorId = $this->session->userdata('loginDetails')['user_id']; 
+                   $userId = $this->random_user_id(); 
+                   
+                
+                    
+                    $password = $this->encryption->encrypt($pass);
+                    
+                    
+                    $arr['profile_image']               = $img;
+                    $arr['dealer_id']                   = $distributorId;
+                    $arr['user_code']                   = $userId;
+                    $arr['password']                    = $password;
+                    $arr['first_name']                  = $this->input->post('fname');
+                    $arr['last_name']                   = $this->input->post('lname');
+                    $arr['mobile']                      = $this->input->post('phone');
+                    $arr['email']                       = $this->input->post('email');
+                    $arr['dob']                         = $this->input->post('dob');
+                    $arr['gender']                      = $this->input->post('gender');
+                    $arr['pan_card']                    = $this->input->post('pancard');
+                    $arr['gst']                         = $this->input->post('gst');
+                    $arr['platform_fee_type']           = $this->input->post('feeType');
+                    $arr['platform_fee']                = $this->input->post('pfee');
+                    $arr['status']                      = $this->input->post('status');
+                    $arr['is_dealer']                      = 'N';
+                    $arr['is_vendor']                      = 'Y';
+                    $arr['is_customer']                      = 'Y';
+                    
+                    
+                    if($this->Crud_model->insert_data('users', $arr) == true){
+                        $this->session->set_flashdata('success', 'Successfully Added!');
+                        redirect('distributor/vendor/add_vendor');
+                    }
+            }
+            
+            else
+            {
+               
+                $data['error_msg'] =  $this->upload->display_errors();
+                
+                $this->load->view('distributor/addVendor', $data);
+            }
+        }
+        else
+        {
+            $this->load->view('distributor/addVendor', $data); 
+        }
+        
+        
+    }
